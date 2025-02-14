@@ -18,15 +18,33 @@ spec:
       labels:
         app: {{ .Values.deployment.app.name }}
         type: {{ .Values.deployment.app.type }}
+      annotations:
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "{{ default "8000" .Values.deployment.container.port }}"
+        prometheus.io/scheme: "http"
+        prometheus.io/scrape: "true"
     spec:
       containers:
         - name: {{ .Values.deployment.container.name }}
           image: {{ .Values.deployment.repo.url }}:{{ .Values.deployment.image.tag }}
+          imagePullPolicy: Always
           ports:
-              - containerPort: {{ default "8000" .Values.deployment.container.port }}
+            - containerPort: {{ default "8000" .Values.deployment.container.port }}
           readinessProbe:
             tcpSocket:
               port: {{ default "8000" .Values.deployment.container.port }}
+            initialDelaySeconds: 180
+            periodSeconds: 5
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: {{ default "8000" .Values.deployment.container.port }}
+            initialDelaySeconds: 180
+            periodSeconds: 5
+            timeoutSeconds: 5
+          env:
+
+          envFrom:
           resources:
             requests:
               memory: "{{ default "64Mi" .Values.deployment.resource.request.memory }}"
@@ -36,23 +54,14 @@ spec:
               memory: "{{ default "64Mi" .Values.deployment.resource.limits.memory }}"
               cpu: "{{ default "100m" .Values.deployment.resource.limits.cpu }}"
             {{- end }}
-          env:
-
-          envFrom:
           volumeMounts:
             - name: {{ .Values.deployment.volume.name }}
               mountPath: /logs
-            - name: config-{{ .Values.deployment.app.name }}
-              mountPath: /usr/share/nginx/html/config.js
-              subPath: config.js
 
       volumes:
-        - name: config-{{ .Values.deployment.app.name }}
-          configMap:
-            name: frontend-config-{{ .Values.deployment.app.name }}
         - name: {{ .Values.deployment.volume.name }}
           persistentVolumeClaim:
             claimName: {{ .Values.pvc.name }}
 
       imagePullSecrets:
-          - name: {{ .Values.deployment.image.secret }}
+        - name: {{ .Values.deployment.image.secret }}
