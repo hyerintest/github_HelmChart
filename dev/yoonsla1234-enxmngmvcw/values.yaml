@@ -10,7 +10,7 @@ service:
   type:
   - ClusterIP
   - NodePort
-namespace: github-dev
+namespace: -@namespace@-
 pvc:
   name: pvc-yoonsla1234-enxmngmvcw
   storageClass: tlc-block-sc
@@ -20,15 +20,15 @@ deployment:
   app:
     name: yoonsla1234-enxmngmvcw
     type: react
-  replicas: 1
+  replicas: -@replicas@-
   update:
     type: RollingUpdate
   repo:
-    url: turaco-dev-registry.turacocloud.com/dev-turaco-workspace-268/turaco
+    url: -@imageRepoName@-
   image:
     name: yoonsla1234-enxmngmvcw
     tag: lastest
-    secret: regsecret
+    secret: -@repoSecret@-
   container:
     name: yoonsla1234-enxmngmvcw
     port: 80
@@ -36,11 +36,11 @@ deployment:
     name: pvc-yoonsla1234-enxmngmvcw
   resource:
     request:
-      memory: 250Mi
-      cpu: 0.25
+      memory: -@requestMemory@-
+      cpu: -@requestCpu@-
     limits:
-      memory: 500Mi
-      cpu: 0.5
+      memory: -@limitsMemory@-
+      cpu: -@limitsCpu@-
   backing: 
   secret:
     name: []
@@ -48,7 +48,7 @@ deployment:
     name: []
   hpa:
     name: hpa-yoonsla1234-enxmngmvcw
-    minReplicas: 1
-    maxReplicas: 1
-    cpu: 70
+    minReplicas: -@minReplicas@-
+    maxReplicas: -@maxReplicas@-
+    cpu: -@cpuAutoScale@-
     memory: -@memAutoScale@-
